@@ -1,0 +1,79 @@
+﻿body {
+    background: url(../Ikonice/background.jpg) no-repeat center center ;
+    background-size: cover;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    height: 130%;
+    margin-bottom:0;
+    padding-bottom:0;
+}
+
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+   
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Override the default bootstrap behavior where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+    max-width: 280px;
+}
+
+#map {
+    height: 400px;
+}
+
+.weatherInfo {
+    background-color: #DBEDF9;
+    color: #527D94;
+}
+.verticalImage {
+    padding: 5px;
+    background-image: linear-gradient(#0A5392, #71CDE0);
+    height: 370px;
+}
+.sun {
+    width: 100%;
+    height: 100%;
+    background: url(../Ikonice/sun2.png) no-repeat center center;
+}
+
+.cloud {
+    width: 100%;
+    height: 100%;
+    background: url(../Ikonice/cloud2.png) no-repeat center top;
+}
+
+#medium,#mediumD{
+    height:15%;
+}
+
+#low, #lowD{
+    height: 30%;
+}
+.naslov{
+    font-size: large;
+}
+#pac-input
+{
+    font-size:medium;
+}
+.footer {
+    min-height: 30px;
+    max-height: 30px;
+    background-color:  dimgray;
+    color: white;
+    font-size: 15px;
+}
+

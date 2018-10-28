@@ -1,0 +1,395 @@
+﻿@{
+    ViewBag.Title = "Home";
+}
+<h2 class="text-center text-info">WEATHER</h2>
+<h3>@ViewBag.Message</h3>
+
+<script src="~/Scripts/jquery-3.3.1.min.js"></script>
+
+<div class="col-12">
+    <input id="pac-input" class="controls col-4 alert alert-light mt-2" type="text" placeholder="Search Box">
+    <div class="col-12 border border-dark" id="map"></div>
+</div>
+
+<hr />
+
+<div class="col-12 row pb-5">
+    <div class="weather col-lg-6 col-sm-12">
+        <div id="curLocation" class="col-12 border border-dark text-center py-1"> <p class="m-0 p-0">Departure weather</p> </div>
+
+        <br />
+
+        <div class="weatherInfo col-12 py-1 px-2">
+            <p class="naslov">Departure weather</p>
+            <p id="DewPoint" class="font-weight-bold p-0 m-0"></p>
+            <p id="Humidity" class="font-weight-bold p-0 m-0"></p>
+            <p id="Temperature" class="font-weight-bold p-0 m-0"></p>
+        </div>
+
+        <br />
+
+        <div class="weatherImages col-12 row m-0 p-0 text-white">
+            <div class="col-sm-3 col-xs-6 column verticalImage border-right border-white text-center">
+                <div id="Fog"></div>
+                <div id="sun" class="sun"></div>
+            </div>
+
+            <div class="col-sm-3 col-xs-6 column verticalImage border-right border-white text-center">
+                <div id="LowClouds"></div>
+                <div id="low"></div>
+                <div id="LowCloudsImage" class="cloud"></div>
+            </div>
+
+            <div class="col-sm-3 col-xs-6 column verticalImage border-right border-white text-center">
+                <div id="MediumClouds"></div>
+                <div id="medium"></div>
+                <div id="MediumCloudsImage" class="cloud"></div>
+            </div>
+
+            <div class="col-sm-3 col-xs-6 column verticalImage text-center">
+                <div id="HighClouds"></div>
+                <div id="HighCloudsImage" class="cloud"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="weather col-lg-6 col-sm-12 invisible" id="visibility">
+        <div id="desLocation" class="col-12 border border-dark text-center py-1"> <p class="m-0 p-0">Destination weather</p> </div>
+
+        <br />
+
+        <div class="weatherInfo col-12 py-1 px-2">
+            <p class="naslov">Destination weather</p>
+            <p id="DewPointD" class="font-weight-bold p-0 m-0"></p>
+            <p id="HumidityD" class="font-weight-bold p-0 m-0"></p>
+            <p id="TemperatureD" class="font-weight-bold p-0 m-0"></p>
+        </div>
+
+        <br />
+
+        <div class="weatherImages col-12 row m-0 p-0 text-white ">
+            <div class="col-sm-3 col-xs-6 column verticalImage border-right border-white text-center">
+                <div id="FogD"></div>
+                <div id="sunD" class="sun"></div>
+            </div>
+
+            <div class="col-sm-3 col-xs-6 column verticalImage border-right border-white text-center">
+                <div id="LowCloudsD"></div>
+                <div id="lowD"></div>
+                <div id="LowCloudsImageD" class="cloud"></div>
+            </div>
+
+            <div class="col-sm-3 col-xs-6 column verticalImage border-right border-white text-center">
+                <div id="MediumCloudsD"></div>
+                <div id="mediumD"></div>
+                <div id="MediumCloudsImageD" class="cloud"></div>
+            </div>
+
+            <div class="col-sm-3 col-xs-6 column verticalImage text-center">
+                <div id="HighCloudsD"></div>
+                <div id="HighCloudsImageD" class="cloud"></div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    function InitializeMap()
+    {
+        navigator.geolocation.getCurrentPosition(setPosition);
+
+        function setPosition(position)
+        {
+            var latlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+
+            var geocoder = new google.maps.Geocoder();
+            geocoder.geocode(
+                {
+                    'latLng': latlng 
+                },
+                function (results, status)
+                {
+                    if (status == google.maps.GeocoderStatus.OK)
+                    {
+                        if (results[0])
+                        {
+                            var add = results[0].formatted_address;
+                            var value = add.split(",");
+
+                            count = value.length;
+                            city = value[count - 2];
+                            document.getElementById("curLocation").innerText = city;
+                        }
+                    }
+                }
+            );
+
+         $.ajax(
+            {
+                type: "POST",
+                url: '@Url.Action("Index", "Home")',
+                data:
+                {
+                    latitude: Math.round(position.coords.latitude, 2),
+                    longitude: Math.round(position.coords.longitude, 2)
+                },
+                    success: function (data)
+                    {
+                        document.getElementById("DewPoint").innerHTML = "Dew Point: " + data.DewpointTemperature;
+                        document.getElementById("Humidity").innerHTML = "Humidity: " + data.Humidity;
+                        document.getElementById("Temperature").innerHTML = "Temperature: " + data.Temperature;
+
+                        var mediumClouds = document.getElementById("Fog");
+                        mediumClouds.innerHTML = data.Fog + "% <br/> Fog";
+                        var opacityF;
+
+                        if (data.Fog < 20)
+                        {
+                            opacityF = 1;
+                        }
+                        else if (data.Fog <= 50)
+                        {
+                            opacityF = 0.5;
+                        }
+                        else
+                        {
+                            opacityF = 0;
+                        }
+                        document.getElementById("sun").style.opacity = opacityF;
+
+                        var lowClouds = document.getElementById("LowClouds");
+                        lowClouds.innerHTML = data.LowClouds + "% <br/> Low <br/> Clouds";
+                        var opacityL;
+
+                        if (data.LowClouds < 20)
+                        {
+                            opacityL = 0;
+                        }
+                        else if (data.LowClouds <= 50)
+                        {
+                            opacityL = 0.5;
+                        }
+                        else
+                        {
+                            opacityL = 1;
+                        }
+                        document.getElementById("LowCloudsImage").style.opacity = opacityL;
+
+
+
+                        var mediumClouds = document.getElementById("MediumClouds");
+                        mediumClouds.innerHTML = data.MediumClouds + "% <br/> Medium <br/> Clouds";
+                        var opacityM;
+
+                        if (data.MediumClouds < 20)
+                        {
+                            opacityM = 0;
+                        }
+                        else if (data.MediumClouds <= 50)
+                        {
+                            opacityM = 0.5;
+                        }
+                        else
+                        {
+                            opacityM = 1;
+                        }
+                        document.getElementById("MediumCloudsImage").style.opacity = opacityM;
+
+                        var highClouds = document.getElementById("HighClouds");
+                        highClouds.innerHTML = data.HighClouds + "% <br/> High <br/> Clouds";
+                        var opacityH;
+
+                        if (data.HighClouds < 20)
+                        {
+                            opacityH = 0;
+                        }
+                        else if (data.HighClouds <= 50)
+                        {
+                            opacityH = 0.5;
+                        }
+                        else
+                        {
+                            opacityH = 1;
+                        }
+                        document.getElementById("HighCloudsImage").style.opacity = opacityH;
+                    }
+            });
+
+
+        var myOptions =
+        {
+            zoom: 8,
+            center: latlng,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+
+        var map = new google.maps.Map(document.getElementById("map"), myOptions);
+        var input = document.getElementById('pac-input');
+        var searchBox = new google.maps.places.SearchBox(input);
+        map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+
+        map.addListener('bounds_changed', function ()
+        {
+            searchBox.setBounds(map.getBounds());
+        });
+
+        var markers = [];
+
+        searchBox.addListener('places_changed', function ()
+        {
+            var places = searchBox.getPlaces();
+
+            if (places.length == 0)
+            {
+                return;
+            }
+
+            markers.forEach(function (marker)
+            {
+                marker.setMap(null);
+            });
+            markers = [];
+
+            var bounds = new google.maps.LatLngBounds();
+
+            places.forEach(function (place)
+            {
+                if (!place.geometry)
+                {
+                    return;
+                }
+
+                var icon =
+                {
+                    url: place.icon,
+                    size: new google.maps.Size(71, 71),
+                    origin: new google.maps.Point(0, 0),
+                    anchor: new google.maps.Point(17, 34),
+                    scaledSize: new google.maps.Size(25, 25)
+                };
+
+                markers.push(new google.maps.Marker(
+                {
+                    map: map,
+                    icon: icon,
+                    title: place.name,
+                    position: place.geometry.location
+                }));
+
+                if (place.geometry.viewport)
+                {
+                    bounds.union(place.geometry.viewport);
+                }
+                else
+                {
+                    bounds.extend(place.geometry.location);
+                }
+            });
+
+            map.fitBounds(bounds);
+            var lat = map.getBounds().getNorthEast().lat();
+            var lng = map.getBounds().getNorthEast().lng();
+
+
+            $.ajax(
+            {
+                type: "POST",
+                url: '@Url.Action("Index", "Home")',
+                data:
+                {
+                    latitude: lat,
+                    longitude: lng
+                },
+                    success: function (data)
+                    {
+                        document.getElementById("visibility").classList.remove("invisible");
+                        document.getElementById("DewPointD").innerHTML = "Dew Point: " + data.DewpointTemperature;
+                        document.getElementById("HumidityD").innerHTML = "Humidity: " + data.Humidity;
+                        document.getElementById("TemperatureD").innerHTML = "Temperature: " + data.Temperature;
+
+                        var mediumClouds = document.getElementById("FogD");
+                        mediumClouds.innerHTML = data.Fog + "% <br/> Fog";
+                        var opacityF;
+
+                        if (data.Fog < 20) {
+                            opacityF = 1;
+                        }
+                        else if (data.Fog <= 50)
+                        {
+                            opacityF = 0.5;
+                        }
+                        else
+                        {
+                            opacityF = 0;
+                        }
+                        document.getElementById("sunD").style.opacity = opacityF;
+
+                        var lowClouds = document.getElementById("LowCloudsD");
+                        lowClouds.innerHTML = data.LowClouds + "% <br/> Low <br/> Clouds";
+                        var opacityL;
+
+                        if (data.LowClouds < 20)
+                        {
+                            opacityL = 0;
+                        }
+                        else if (data.LowClouds <= 50)
+                        {
+                            opacityL = 0.5;
+                        }
+                        else
+                        {
+                            opacityL = 1;
+                        }
+                        document.getElementById("LowCloudsImageD").style.opacity = opacityL;
+
+
+                        var mediumClouds = document.getElementById("MediumCloudsD");
+                        mediumClouds.innerHTML = data.MediumClouds + "% <br/> Medium <br/> Clouds";
+                        var opacityM;
+
+                        if (data.MediumClouds < 20)
+                        {
+                            opacityM = 0;
+                        }
+                        else if (data.MediumClouds <= 50)
+                        {
+                            opacityM = 0.5;
+                        }
+                        else
+                        {
+                            opacityM = 1;
+                        }
+                        document.getElementById("MediumCloudsImageD").style.opacity = opacityM;
+
+                        var highClouds = document.getElementById("HighCloudsD");
+                        highClouds.innerHTML = data.HighClouds + "% <br/> High <br/> Clouds";
+                        var opacityH;
+
+                        if (data.HighClouds < 20) {
+                            opacityH = 0;
+                        }
+                        else if (data.HighClouds <= 50) {
+                            opacityH = 0.5;
+                        }
+                        else
+                        {
+                            opacityH = 1;
+                        }
+                        document.getElementById("HighCloudsImageD").style.opacity = opacityH;
+
+                        document.getElementById("desLocation").innerText = document.getElementById("pac-input").value.split(',')[0];
+                    }
+            });
+            });
+        }
+     }
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyBGNUW5a8iPwxyRu2Jakd88oXm9ZhIcJSQ&callback=InitializeMap"></script>
+
+
+
+
+
